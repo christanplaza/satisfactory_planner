@@ -1,0 +1,412 @@
+{
+  "buildings": {
+    "Production": {
+      "Smelter": {
+        "width": 54,
+        "height": 54,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Constructor": {
+        "width": 60,
+        "height": 60,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Assembler": {
+        "width": 70,
+        "height": 70,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 2,
+            "output": 0
+          }
+        }
+      },
+      "Manufacturer": {
+        "width": 120,
+        "height": 100,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 3,
+            "output": 0
+          }
+        }
+      },
+      "Foundry": {
+        "width": 64,
+        "height": 64,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 2,
+            "output": 0
+          }
+        }
+      },
+      "Blender": {
+        "width": 80,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 4,
+            "output": 0
+          }
+        }
+      },
+      "Packager": {
+        "width": 50,
+        "height": 50,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Refinery": {
+        "width": 100,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 2
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      }
+    },
+    "Power": {
+      "Coal Generator": {
+        "width": 90,
+        "height": 60,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 0
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Biomass Burner": {
+        "width": 40,
+        "height": 40,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 0
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Fuel Generator": {
+        "width": 100,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 0
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Nuclear Power Plant": {
+        "width": 200,
+        "height": 200,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 2,
+            "output": 0
+          }
+        }
+      }
+    },
+    "Resource Extraction": {
+      "Oil Pump": {
+        "width": 80,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      },
+      "Water Extractor": {
+        "width": 80,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
+    },
+    "Transportation": {
+      "Truck Station": {
+        "width": 120,
+        "height": 100,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      }
+    },
+    "Storage": {
+      "Storage Container": {
+        "width": 40,
+        "height": 40,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Industrial Storage Container": {
+        "width": 80,
+        "height": 80,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      }
+    },
+    "Space": {
+      "Space Elevator": {
+        "width": 200,
+        "height": 200,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 0
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 2,
+            "output": 0
+          }
+        }
+      }
+    }
+  }
+}
