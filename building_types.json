@@ -408,8 +408,8 @@
     },
     "Logistics": {
       "Splitter": {
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "connectors": {
           "north": {
             "input": 0,
@@ -430,8 +430,8 @@
         }
       },
       "Merger": {
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "connectors": {
           "north": {
             "input": 1,

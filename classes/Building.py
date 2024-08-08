@@ -1,32 +1,29 @@
-# classes/Building.py
-
-import tkinter as tk
+# Building.py
+import textwrap
 
 class Building:
-    def __init__(self, canvas, x, y, name, config, grid_size, deselect_all_callback, node_select_callback, update_connections_callback):
+    def __init__(self, canvas, x, y, name, config, grid_size, deselect_all_callback, node_select_callback, update_connections_callback, on_click_callback=None):
         self.canvas = canvas
         self.name = name
         self.width = config["width"]
         self.height = config["height"]
         self.connectors = config["connectors"]
+        self.deselect_all_callback = deselect_all_callback
+        self.node_select_callback = node_select_callback
+        self.update_connections_callback = update_connections_callback
+        self.on_click_callback = on_click_callback
         self.grid_size = grid_size
-        self.deselect_all_callback = deselect_all_callback  # Callback to deselect other buildings
-        self.node_select_callback = node_select_callback  # Callback to notify node selection
-        self.update_connections_callback = update_connections_callback  # Callback to update connections
 
         # Create the building rectangle
         self.rect = self.canvas.create_rectangle(x, y, x + self.width, y + self.height, fill="blue")
 
         # Create the label for the building
-        self.label = self.canvas.create_text(x + self.width / 2, y + self.height / 2, text=name, fill="white")
+        self.label = self.canvas.create_text(x + self.width / 2, y + self.height / 2, text=name, fill="white", width=self.width)
 
         # Create snapping points based on connectors
         self.snapping_points = self.create_snapping_points()
 
-        # Selection state
-        self.selected = False
-
-        # Bind events for dragging and selection
+        # Bind events for dragging
         self.canvas.tag_bind(self.rect, "<ButtonPress-1>", self.on_press)
         self.canvas.tag_bind(self.rect, "<B1-Motion>", self.on_drag)
         self.canvas.tag_bind(self.rect, "<ButtonRelease-1>", self.on_release)
@@ -36,11 +33,13 @@ class Building:
         self.canvas.tag_bind(self.label, "<B1-Motion>", self.on_drag)
         self.canvas.tag_bind(self.label, "<ButtonRelease-1>", self.on_release)
 
-        # Bind events for node selection
-        for point, _ in self.snapping_points:
-            self.canvas.tag_bind(point, "<ButtonPress-1>", self.on_node_click)
+        # Bind on-click callback if provided
+        if self.on_click_callback:
+            self.canvas.tag_bind(self.rect, "<Double-Button-1>", self.on_double_click)
+            self.canvas.tag_bind(self.label, "<Double-Button-1>", self.on_double_click)
 
         self.drag_data = {"x": 0, "y": 0}
+        self.selected = False
 
     def create_snapping_points(self):
         snap_positions = []
@@ -87,18 +86,16 @@ class Building:
             point = self.canvas.create_oval(
                 snap_x - 3, snap_y - 3, snap_x + 3, snap_y + 3, fill=color
             )
+
+            # Bind event for node selection
+            self.canvas.tag_bind(point, "<ButtonPress-1>", lambda event, node=point, ntype=point_type: self.node_select_callback(self, node, ntype))
             points.append((point, point_type))
 
         return points
 
     def on_press(self, event):
-        # Toggle selection
-        if self.is_selected():
-            self.deselect()
-        else:
-            self.deselect_all_callback()
-            self.select()
-
+        self.deselect_all_callback()  # Deselect other buildings and connections
+        self.select()
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
 
@@ -117,7 +114,7 @@ class Building:
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
 
-        # Notify that connections should be updated
+        # Update connections
         self.update_connections_callback(self)
 
     def on_release(self, event):
@@ -136,26 +133,30 @@ class Building:
         for point, _ in self.snapping_points:
             self.canvas.move(point, offset_x, offset_y)
 
-        # Notify that connections should be updated
+        # Update connections
         self.update_connections_callback(self)
 
-    def on_node_click(self, event):
-        # Notify the node select callback
-        item = self.canvas.find_withtag("current")[0]
-        for point, point_type in self.snapping_points:
-            if point == item:
-                # Call the node select callback
-                self.node_select_callback(self, point, point_type)
+    def on_double_click(self, event):
+        if self.on_click_callback:
+            self.on_click_callback(self)
 
     def select(self):
-        # Highlight the building to show selection
         self.selected = True
-        self.canvas.itemconfig(self.rect, outline="yellow", width=2)
+        self.canvas.itemconfig(self.rect, outline="blue", width=2)
 
     def deselect(self):
-        # Remove highlight from the building
         self.selected = False
         self.canvas.itemconfig(self.rect, outline="", width=1)
 
     def is_selected(self):
         return self.selected
+
+    def update_output_label(self, text):
+        # Calculate the maximum width in characters based on the building width
+        char_width = int(self.width // 8)  # Roughly 8 pixels per character
+
+        # Wrap the text to fit within the building width
+        wrapped_text = textwrap.fill(text, width=char_width)
+
+        # Update the label text to show resource and purity
+        self.canvas.itemconfig(self.label, text=wrapped_text)

@@ -1,0 +1,54 @@
+{
+  "solid_resources": {
+    "Iron Ore": {
+      "impure_rate": 30,
+      "normal_rate": 60,
+      "pure_rate": 120
+    },
+    "Copper Ore": {
+      "impure_rate": 30,
+      "normal_rate": 60,
+      "pure_rate": 120
+    },
+    "Limestone": {
+      "impure_rate": 30,
+      "normal_rate": 60,
+      "pure_rate": 120
+    },
+    "Coal": {
+      "impure_rate": 15,
+      "normal_rate": 30,
+      "pure_rate": 60
+    },
+    "Caterium Ore": {
+      "impure_rate": 15,
+      "normal_rate": 30,
+      "pure_rate": 60
+    },
+    "Raw Quartz": {
+      "impure_rate": 15,
+      "normal_rate": 30,
+      "pure_rate": 60
+    },
+    "Sulfur": {
+      "impure_rate": 15,
+      "normal_rate": 30,
+      "pure_rate": 60
+    },
+    "Uranium": {
+      "impure_rate": 10,
+      "normal_rate": 20,
+      "pure_rate": 40
+    },
+    "Bauxite": {
+      "impure_rate": 10,
+      "normal_rate": 20,
+      "pure_rate": 40
+    },
+    "SAM Ore": {
+      "impure_rate": 0,
+      "normal_rate": 0,
+      "pure_rate": 0
+    }
+  }
+}
