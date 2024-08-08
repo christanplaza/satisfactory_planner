@@ -3,7 +3,7 @@
 import tkinter as tk
 
 class Building:
-    def __init__(self, canvas, x, y, name, config, grid_size, deselect_all_callback):
+    def __init__(self, canvas, x, y, name, config, grid_size, deselect_all_callback, node_select_callback, update_connections_callback):
         self.canvas = canvas
         self.name = name
         self.width = config["width"]
@@ -11,6 +11,8 @@ class Building:
         self.connectors = config["connectors"]
         self.grid_size = grid_size
         self.deselect_all_callback = deselect_all_callback  # Callback to deselect other buildings
+        self.node_select_callback = node_select_callback  # Callback to notify node selection
+        self.update_connections_callback = update_connections_callback  # Callback to update connections
 
         # Create the building rectangle
         self.rect = self.canvas.create_rectangle(x, y, x + self.width, y + self.height, fill="blue")
@@ -33,6 +35,10 @@ class Building:
         self.canvas.tag_bind(self.label, "<ButtonPress-1>", self.on_press)
         self.canvas.tag_bind(self.label, "<B1-Motion>", self.on_drag)
         self.canvas.tag_bind(self.label, "<ButtonRelease-1>", self.on_release)
+
+        # Bind events for node selection
+        for point, _ in self.snapping_points:
+            self.canvas.tag_bind(point, "<ButtonPress-1>", self.on_node_click)
 
         self.drag_data = {"x": 0, "y": 0}
 
@@ -111,6 +117,9 @@ class Building:
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
 
+        # Notify that connections should be updated
+        self.update_connections_callback(self)
+
     def on_release(self, event):
         # Snap to grid logic for the building's center
         x0, y0, x1, y1 = self.canvas.coords(self.rect)
@@ -126,6 +135,17 @@ class Building:
         self.canvas.move(self.label, offset_x, offset_y)
         for point, _ in self.snapping_points:
             self.canvas.move(point, offset_x, offset_y)
+
+        # Notify that connections should be updated
+        self.update_connections_callback(self)
+
+    def on_node_click(self, event):
+        # Notify the node select callback
+        item = self.canvas.find_withtag("current")[0]
+        for point, point_type in self.snapping_points:
+            if point == item:
+                # Call the node select callback
+                self.node_select_callback(self, point, point_type)
 
     def select(self):
         # Highlight the building to show selection
