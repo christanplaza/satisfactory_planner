@@ -312,6 +312,28 @@
             "output": 0
           }
         }
+      },
+      "Miner": {
+        "width": 60,
+        "height": 60,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 0
+          },
+          "west": {
+            "input": 0,
+            "output": 0
+          }
+        }
       }
     },
     "Transportation": {
@@ -384,6 +406,52 @@
         }
       }
     },
+    "Logistics": {
+      "Splitter": {
+        "width": 40,
+        "height": 40,
+        "connectors": {
+          "north": {
+            "input": 0,
+            "output": 1
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 0,
+            "output": 1
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      },
+      "Merger": {
+        "width": 40,
+        "height": 40,
+        "connectors": {
+          "north": {
+            "input": 1,
+            "output": 0
+          },
+          "east": {
+            "input": 0,
+            "output": 1
+          },
+          "south": {
+            "input": 1,
+            "output": 0
+          },
+          "west": {
+            "input": 1,
+            "output": 0
+          }
+        }
+      }
+    },
     "Space": {
       "Space Elevator": {
         "width": 200,
@@ -394,7 +462,7 @@
             "output": 0
           },
           "east": {
-            "input": 0,
+            "input": 3,
             "output": 0
           },
           "south": {
@@ -402,7 +470,7 @@
             "output": 0
           },
           "west": {
-            "input": 2,
+            "input": 3,
             "output": 0
           }
         }

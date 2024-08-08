@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
+import tkinter.font as TKFont
 import json
 from classes.Building import Building
 
@@ -16,6 +17,9 @@ class FactoryPlanner(tk.Tk):
         # Canvas with scroll region for panning
         self.canvas = tk.Canvas(self, width=600, height=400, bg="white", scrollregion=(-2000, -2000, 2000, 2000))
         self.canvas.pack(side=tk.RIGHT, padx=10, pady=20, expand=True, fill=tk.BOTH)
+
+
+        self.helv36 = TKFont.Font(family='Helvetica', size=12, weight='bold')
 
         # Scrollbars
         h_scrollbar = tk.Scrollbar(self, orient=tk.HORIZONTAL, command=self.canvas.xview)
@@ -36,7 +40,7 @@ class FactoryPlanner(tk.Tk):
         self.create_collapsible_buttons()
 
         self.buildings = []
-        self.connections = []  # Store connections as tuples (start_node, end_node, line_id)
+        self.connections = []  # Store connections as tuples (start_node, end_node, line_id, label_id)
         self.connected_nodes = set()  # Track nodes that are connected
         self.selected_connection = None  # Track the selected connection
 
@@ -97,7 +101,8 @@ class FactoryPlanner(tk.Tk):
     def deselect_all_connections(self):
         # Deselect all connections
         if self.selected_connection is not None:
-            self.canvas.itemconfig(self.selected_connection, fill="green", width=4)
+            line_id, label_id = self.selected_connection
+            self.canvas.itemconfig(line_id, fill="gray", width=4)
             self.selected_connection = None
 
     def delete_selected(self, event):
@@ -118,12 +123,13 @@ class FactoryPlanner(tk.Tk):
 
                 # Remove connections related to this building
                 connections_to_remove = []
-                for start_node, end_node, line_id in self.connections:
+                for start_node, end_node, line_id, label_id in self.connections:
                     if start_node in [point for point, _ in building.snapping_points] or end_node in [point for point, _ in building.snapping_points]:
                         self.canvas.delete(line_id)
+                        self.canvas.delete(label_id)
                         self.connected_nodes.discard(start_node)
                         self.connected_nodes.discard(end_node)
-                        connections_to_remove.append((start_node, end_node, line_id))
+                        connections_to_remove.append((start_node, end_node, line_id, label_id))
 
                 # Update connections
                 for connection in connections_to_remove:
@@ -136,12 +142,14 @@ class FactoryPlanner(tk.Tk):
     def delete_selected_connection(self):
         # Delete the selected connection
         if self.selected_connection is not None:
-            for start_node, end_node, line_id in self.connections:
-                if line_id == self.selected_connection:
-                    self.canvas.delete(line_id)
+            line_id, label_id = self.selected_connection
+            for start_node, end_node, connection_line_id, connection_label_id in self.connections:
+                if connection_line_id == line_id:
+                    self.canvas.delete(connection_line_id)
+                    self.canvas.delete(connection_label_id)
                     self.connected_nodes.discard(start_node)
                     self.connected_nodes.discard(end_node)
-                    self.connections.remove((start_node, end_node, line_id))
+                    self.connections.remove((start_node, end_node, connection_line_id, connection_label_id))
                     print("Deleted connection")
                     break
 
@@ -168,13 +176,18 @@ class FactoryPlanner(tk.Tk):
             self.canvas.itemconfig(other_node, outline="", width=1)
             self.selected_node = None
 
-    def create_connection(self, start_node, end_node):
+    def create_connection(self, start_node, end_node, capacity=60):
         x0, y0, _, _ = self.canvas.coords(start_node)
         x1, y1, _, _ = self.canvas.coords(end_node)
 
         # Draw line between two snapping points with increased thickness
-        connection_line = self.canvas.create_line(x0, y0, x1, y1, fill="green", width=4)
-        self.connections.append((start_node, end_node, connection_line))
+        connection_line = self.canvas.create_line(x0, y0, x1, y1, fill="gray", width=4)
+
+        # Create a label for the capacity
+        mid_x, mid_y = (x0 + x1) / 2, (y0 + y1) / 2
+        capacity_label = self.canvas.create_text(mid_x, mid_y, text=f"0/{capacity}", fill="black", font=self.helv36)
+
+        self.connections.append((start_node, end_node, connection_line, capacity_label))
 
         # Bind events for selecting the connection
         self.canvas.tag_bind(connection_line, "<ButtonPress-1>", self.on_connection_click)
@@ -188,23 +201,32 @@ class FactoryPlanner(tk.Tk):
     def on_connection_click(self, event):
         # Select a connection line
         self.deselect_all()  # Ensure only one selection at a time
-        self.selected_connection = self.canvas.find_withtag("current")[0]
-        self.canvas.itemconfig(self.selected_connection, fill="yellow", width=4)  # Highlight selected connection
+        line_id = self.canvas.find_withtag("current")[0]
+        # Find the corresponding label
+        label_id = next((label for _, _, line, label in self.connections if line == line_id), None)
+        self.selected_connection = (line_id, label_id)
+        self.canvas.itemconfig(line_id, fill="yellow", width=4)  # Highlight selected connection
         print("Connection selected")
 
     def update_connections(self, building):
         # Update connections for a given building
         valid_connections = []
-        for start_node, end_node, line_id in self.connections:
+        for start_node, end_node, line_id, label_id in self.connections:
             # Check if nodes are still valid
             if self.canvas.coords(start_node) and self.canvas.coords(end_node):
                 x0, y0, _, _ = self.canvas.coords(start_node)
                 x1, y1, _, _ = self.canvas.coords(end_node)
                 self.canvas.coords(line_id, x0, y0, x1, y1)
-                valid_connections.append((start_node, end_node, line_id))
+                
+                # Update the label position
+                mid_x, mid_y = (x0 + x1) / 2, (y0 + y1) / 2
+                self.canvas.coords(label_id, mid_x, mid_y)
+                
+                valid_connections.append((start_node, end_node, line_id, label_id))
             else:
                 # Remove connection if any node is invalid
                 self.canvas.delete(line_id)
+                self.canvas.delete(label_id)
                 self.connected_nodes.discard(start_node)
                 self.connected_nodes.discard(end_node)
         
