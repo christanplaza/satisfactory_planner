@@ -37,10 +37,12 @@ class FactoryPlanner(tk.Tk):
 
         self.buildings = []
         self.connections = []  # Store connections as tuples (start_node, end_node, line_id)
+        self.connected_nodes = set()  # Track nodes that are connected
+        self.selected_connection = None  # Track the selected connection
 
         self.bind("<KeyPress-c>", self.connect_snapping_points)
-        self.bind("<KeyPress-Delete>", self.delete_selected_building)
-        self.bind("<KeyPress-BackSpace>", self.delete_selected_building)
+        self.bind("<KeyPress-Delete>", self.delete_selected)
+        self.bind("<KeyPress-BackSpace>", self.delete_selected)
 
         # Panning
         self.panning_enabled = False
@@ -75,19 +77,37 @@ class FactoryPlanner(tk.Tk):
             name=building_name, 
             config=config, 
             grid_size=self.grid_size, 
-            deselect_all_callback=self.deselect_all_buildings,
+            deselect_all_callback=self.deselect_all,
             node_select_callback=self.on_node_selected,
             update_connections_callback=self.update_connections
         )
         self.buildings.append(building)
         print(f"Spawned {building_name}")
 
+    def deselect_all(self):
+        # Deselect all buildings and connections
+        self.deselect_all_buildings()
+        self.deselect_all_connections()
+
     def deselect_all_buildings(self):
         # Deselect all buildings
         for building in self.buildings:
             building.deselect()
 
-    def delete_selected_building(self, event):
+    def deselect_all_connections(self):
+        # Deselect all connections
+        if self.selected_connection is not None:
+            self.canvas.itemconfig(self.selected_connection, fill="green", width=4)
+            self.selected_connection = None
+
+    def delete_selected(self, event):
+        # Delete selected building or connection
+        if self.selected_connection is not None:
+            self.delete_selected_connection()
+        else:
+            self.delete_selected_building()
+
+    def delete_selected_building(self):
         # Find and delete the selected building
         for building in self.buildings:
             if building.is_selected():
@@ -95,20 +115,43 @@ class FactoryPlanner(tk.Tk):
                 self.canvas.delete(building.label)
                 for point, _ in building.snapping_points:
                     self.canvas.delete(point)
-                
+
                 # Remove connections related to this building
-                self.connections = [
-                    conn for conn in self.connections 
-                    if conn[0] not in building.snapping_points and conn[1] not in building.snapping_points
-                ]
+                connections_to_remove = []
                 for start_node, end_node, line_id in self.connections:
-                    self.canvas.delete(line_id)
+                    if start_node in [point for point, _ in building.snapping_points] or end_node in [point for point, _ in building.snapping_points]:
+                        self.canvas.delete(line_id)
+                        self.connected_nodes.discard(start_node)
+                        self.connected_nodes.discard(end_node)
+                        connections_to_remove.append((start_node, end_node, line_id))
+
+                # Update connections
+                for connection in connections_to_remove:
+                    self.connections.remove(connection)
 
                 self.buildings.remove(building)
                 print(f"Deleted {building.name}")
                 break  # Exit after deleting the first selected building
 
+    def delete_selected_connection(self):
+        # Delete the selected connection
+        if self.selected_connection is not None:
+            for start_node, end_node, line_id in self.connections:
+                if line_id == self.selected_connection:
+                    self.canvas.delete(line_id)
+                    self.connected_nodes.discard(start_node)
+                    self.connected_nodes.discard(end_node)
+                    self.connections.remove((start_node, end_node, line_id))
+                    print("Deleted connection")
+                    break
+
     def on_node_selected(self, building, node, node_type):
+        if node in self.connected_nodes:
+            print("Node already connected.")
+            return
+
+        self.deselect_all()  # Ensure only one selection at a time
+
         if self.selected_node is None:
             # First node selection
             self.selected_node = (building, node, node_type)
@@ -118,7 +161,8 @@ class FactoryPlanner(tk.Tk):
             other_building, other_node, other_type = self.selected_node
 
             if node_type != other_type and building != other_building:
-                self.create_connection(other_node, node)
+                if node not in self.connected_nodes and other_node not in self.connected_nodes:
+                    self.create_connection(other_node, node)
 
             # Reset selection
             self.canvas.itemconfig(other_node, outline="", width=1)
@@ -128,32 +172,60 @@ class FactoryPlanner(tk.Tk):
         x0, y0, _, _ = self.canvas.coords(start_node)
         x1, y1, _, _ = self.canvas.coords(end_node)
 
-        # Draw line between two snapping points
-        connection_line = self.canvas.create_line(x0, y0, x1, y1, fill="gray", width=3)
+        # Draw line between two snapping points with increased thickness
+        connection_line = self.canvas.create_line(x0, y0, x1, y1, fill="green", width=4)
         self.connections.append((start_node, end_node, connection_line))
+
+        # Bind events for selecting the connection
+        self.canvas.tag_bind(connection_line, "<ButtonPress-1>", self.on_connection_click)
+
+        # Mark nodes as connected
+        self.connected_nodes.add(start_node)
+        self.connected_nodes.add(end_node)
+
         print("Connection created")
+
+    def on_connection_click(self, event):
+        # Select a connection line
+        self.deselect_all()  # Ensure only one selection at a time
+        self.selected_connection = self.canvas.find_withtag("current")[0]
+        self.canvas.itemconfig(self.selected_connection, fill="yellow", width=4)  # Highlight selected connection
+        print("Connection selected")
 
     def update_connections(self, building):
         # Update connections for a given building
+        valid_connections = []
         for start_node, end_node, line_id in self.connections:
-            if start_node in [point for point, _ in building.snapping_points] or end_node in [point for point, _ in building.snapping_points]:
+            # Check if nodes are still valid
+            if self.canvas.coords(start_node) and self.canvas.coords(end_node):
                 x0, y0, _, _ = self.canvas.coords(start_node)
                 x1, y1, _, _ = self.canvas.coords(end_node)
                 self.canvas.coords(line_id, x0, y0, x1, y1)
+                valid_connections.append((start_node, end_node, line_id))
+            else:
+                # Remove connection if any node is invalid
+                self.canvas.delete(line_id)
+                self.connected_nodes.discard(start_node)
+                self.connected_nodes.discard(end_node)
+        
+        # Update the list of valid connections
+        self.connections = valid_connections
 
     def connect_snapping_points(self, event):
         if len(self.buildings) < 2:
             return
 
-        # Example connection between the first snapping points of two buildings
-        start_point = self.buildings[0].snapping_points[0][0]  # Get the actual point item
-        end_point = self.buildings[1].snapping_points[0][0]  # Get the actual point item
-        x0, y0, _, _ = self.canvas.coords(start_point)
-        x1, y1, _, _ = self.canvas.coords(end_point)
-
-        # Draw line between two snapping points
-        connection = self.canvas.create_line(x0, y0, x1, y1, fill="gray", width=3)
-        self.connections.append((start_point, end_point, connection))
+        # Attempt to connect compatible nodes
+        for building in self.buildings:
+            for point, point_type in building.snapping_points:
+                if point_type == "output" and point not in self.connected_nodes:
+                    # Find an input node from another building to connect
+                    for other_building in self.buildings:
+                        if other_building != building:
+                            for other_point, other_point_type in other_building.snapping_points:
+                                if other_point_type == "input" and other_point not in self.connected_nodes:
+                                    self.create_connection(point, other_point)
+                                    return  # Exit after making a connection
 
     def enable_panning(self, event):
         self.panning_enabled = True
