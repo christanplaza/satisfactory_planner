@@ -190,7 +190,6 @@ class FactoryPlanner(tk.Tk):
 
     def spawn_building(self, building_name, config):
         # Spawn a building based on its configuration
-        print(f"Creating {building_name} with config: {config}")  # Debug statement
         building = Building(
             self.canvas,
             x=100,
